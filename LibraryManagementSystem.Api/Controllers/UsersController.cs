@@ -143,7 +143,7 @@ namespace LibraryManagementSystem.Api.Controllers
                     Address = createUserDto.Address
                 };
 
-                var createdUser = await _userRepository.AddAsync(user);
+                var createdUser = await _userRepository.AddAsync(user, user.PasswordHash);
                 var userDto = new UserDto
                 {
                     Id = createdUser.Id,

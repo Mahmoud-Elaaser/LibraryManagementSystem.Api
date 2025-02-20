@@ -1,17 +1,25 @@
 ﻿using LibraryManagementSystem.Domain.Entities;
 using LibraryManagementSystem.Infrastructure.Context;
 using LibraryManagementSystem.Infrastructure.Repositories.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.Extensions.Logging;
 namespace LibraryManagementSystem.Infrastructure.Repositories.Implementation
 {
     public class UserRepository : IUserRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<User> _userManager;
+        private readonly ILogger<UserRepository> _logger;
 
-        public UserRepository(ApplicationDbContext context)
+        public UserRepository(
+            ApplicationDbContext context,
+            UserManager<User> userManager,
+            ILogger<UserRepository> logger)
         {
             _context = context;
+            _userManager = userManager;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<User>> GetAllAsync()
@@ -51,26 +59,69 @@ namespace LibraryManagementSystem.Infrastructure.Repositories.Implementation
                 .ToListAsync();
         }
 
-        public async Task<User> AddAsync(User user)
+        public async Task<User> AddAsync(User user, string password)
         {
-            user.MembershipDate = DateTime.UtcNow;
-            user.IsActive = true;
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
-            return user;
+            try
+            {
+                user.MembershipDate = DateTime.UtcNow;
+                user.IsActive = true;
+                var result = await _userManager.CreateAsync(user, password);
+
+                if (!result.Succeeded)
+                {
+                    throw new ApplicationException($"Failed to create user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
+
+                // Assign default role
+                await _userManager.AddToRoleAsync(user, "User");
+
+                _logger.LogInformation("Created new user with ID {UserId}", user.Id);
+                return user;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating user with email {Email}", user.Email);
+                throw;
+            }
         }
 
         public async Task<User> UpdateAsync(User user)
         {
-            _context.Entry(user).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return user;
+            try
+            {
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                {
+                    throw new ApplicationException($"Failed to update user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
+
+                _logger.LogInformation("Updated user with ID {UserId}", user.Id);
+                return user;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating user with ID {UserId}", user.Id);
+                throw;
+            }
         }
 
         public async Task DeleteAsync(User user)
         {
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var result = await _userManager.DeleteAsync(user);
+                if (!result.Succeeded)
+                {
+                    throw new ApplicationException($"Failed to delete user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+                }
+
+                _logger.LogInformation("Deleted user with ID {UserId}", user.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting user with ID {UserId}", user.Id);
+                throw;
+            }
         }
 
         public async Task<bool> EmailExistsAsync(string email)

@@ -14,6 +14,7 @@ namespace LibraryManagementSystem.Infrastructure
             services.AddScoped<IGenreRepository, GenreRepository>();
             services.AddScoped<IReviewRepository, ReviewRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
         }

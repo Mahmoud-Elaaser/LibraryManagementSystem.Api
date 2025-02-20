@@ -9,7 +9,7 @@ namespace LibraryManagementSystem.Infrastructure.Repositories.Interfaces
         Task<User> GetByEmailAsync(string email);
         Task<IEnumerable<User>> GetActiveUsersAsync();
         Task<IEnumerable<User>> GetUsersWithOverdueBooksAsync();
-        Task<User> AddAsync(User user);
+        Task<User> AddAsync(User user, string password);
         Task<User> UpdateAsync(User user);
         Task DeleteAsync(User user);
         Task<bool> EmailExistsAsync(string email);
