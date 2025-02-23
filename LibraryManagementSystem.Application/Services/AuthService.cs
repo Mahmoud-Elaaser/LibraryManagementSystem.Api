@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using LibraryManagementSystem.Application.DTOs;
+using LibraryManagementSystem.Application.DTOs.Auth;
 using LibraryManagementSystem.Domain.Entities;
 using LibraryManagementSystem.Infrastructure.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -199,32 +199,6 @@ namespace LibraryManagementSystem.Application.Services
             }
         }
 
-        public async Task<AuthResponseDto> AssignRoleAsync(string userId, string roleName)
-        {
-            try
-            {
-                var user = await _userManager.FindByIdAsync(userId);
-                if (user == null)
-                    return new AuthResponseDto { IsSuccess = false, Message = "User not found" };
-
-                if (!await _roleManager.RoleExistsAsync(roleName))
-                    return new AuthResponseDto { IsSuccess = false, Message = "Role does not exist" };
-
-                if (await _userManager.IsInRoleAsync(user, roleName))
-                    return new AuthResponseDto { IsSuccess = false, Message = "User already has this role" };
-
-                var result = await _userManager.AddToRoleAsync(user, roleName);
-                if (!result.Succeeded)
-                    return new AuthResponseDto { IsSuccess = false, Message = result.Errors.First().Description };
-
-                return new AuthResponseDto { IsSuccess = true, Message = "Role assigned successfully" };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error assigning role {Role} to user {UserId}", roleName, userId);
-                throw;
-            }
-        }
 
         private async Task<TokenDto> GenerateJwtTokenAsync(User user)
         {
@@ -265,6 +239,111 @@ namespace LibraryManagementSystem.Application.Services
         private string GenerateOTP()
         {
             return new Random().Next(100000, 999999).ToString();
+        }
+
+
+        public async Task<AuthResponseDto> AssignRoleAsync(string userId, string roleName)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                    return new AuthResponseDto { IsSuccess = false, Message = "User not found" };
+
+                if (!await _roleManager.RoleExistsAsync(roleName))
+                    return new AuthResponseDto { IsSuccess = false, Message = "Role does not exist" };
+
+                if (await _userManager.IsInRoleAsync(user, roleName))
+                    return new AuthResponseDto { IsSuccess = false, Message = "User already has this role" };
+
+                var result = await _userManager.AddToRoleAsync(user, roleName);
+                if (!result.Succeeded)
+                    return new AuthResponseDto { IsSuccess = false, Message = result.Errors.First().Description };
+
+                _logger.LogInformation("Role {Role} assigned to user {UserId}", roleName, userId);
+                return new AuthResponseDto { IsSuccess = true, Message = "Role assigned successfully" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error assigning role {Role} to user {UserId}", roleName, userId);
+                throw;
+            }
+        }
+
+        public async Task<AuthResponseDto> UpdateRoleAsync(string userId, string oldRoleName, string newRoleName)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                    return new AuthResponseDto { IsSuccess = false, Message = "User not found" };
+
+                if (!await _roleManager.RoleExistsAsync(oldRoleName))
+                    return new AuthResponseDto { IsSuccess = false, Message = "Current role does not exist" };
+
+                if (!await _roleManager.RoleExistsAsync(newRoleName))
+                    return new AuthResponseDto { IsSuccess = false, Message = "New role does not exist" };
+
+                if (!await _userManager.IsInRoleAsync(user, oldRoleName))
+                    return new AuthResponseDto { IsSuccess = false, Message = "User does not have the specified role" };
+
+                if (await _userManager.IsInRoleAsync(user, newRoleName))
+                    return new AuthResponseDto { IsSuccess = false, Message = "User already has the new role" };
+
+                // Remove old role
+                var removeResult = await _userManager.RemoveFromRoleAsync(user, oldRoleName);
+                if (!removeResult.Succeeded)
+                    return new AuthResponseDto { IsSuccess = false, Message = removeResult.Errors.First().Description };
+
+                // Add new role
+                var addResult = await _userManager.AddToRoleAsync(user, newRoleName);
+                if (!addResult.Succeeded)
+                {
+                    // Rollback by re-adding the old role if adding new role fails
+                    await _userManager.AddToRoleAsync(user, oldRoleName);
+                    return new AuthResponseDto { IsSuccess = false, Message = addResult.Errors.First().Description };
+                }
+
+                _logger.LogInformation("Role updated from {OldRole} to {NewRole} for user {UserId}", oldRoleName, newRoleName, userId);
+                return new AuthResponseDto { IsSuccess = true, Message = "Role updated successfully" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating role from {OldRole} to {NewRole} for user {UserId}", oldRoleName, newRoleName, userId);
+                throw;
+            }
+        }
+
+        public async Task<AuthResponseDto> DeleteRoleFromUserAsync(string userId, string roleName)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                    return new AuthResponseDto { IsSuccess = false, Message = "User not found" };
+
+                if (!await _roleManager.RoleExistsAsync(roleName))
+                    return new AuthResponseDto { IsSuccess = false, Message = "Role does not exist" };
+
+                if (!await _userManager.IsInRoleAsync(user, roleName))
+                    return new AuthResponseDto { IsSuccess = false, Message = "User does not have this role" };
+
+                var userRoles = await _userManager.GetRolesAsync(user);
+                if (userRoles.Count <= 1)
+                    return new AuthResponseDto { IsSuccess = false, Message = "Cannot remove the user's only role" };
+
+                var result = await _userManager.RemoveFromRoleAsync(user, roleName);
+                if (!result.Succeeded)
+                    return new AuthResponseDto { IsSuccess = false, Message = result.Errors.First().Description };
+
+                _logger.LogInformation("Role {Role} removed from user {UserId}", roleName, userId);
+                return new AuthResponseDto { IsSuccess = true, Message = "Role removed successfully" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error removing role {Role} from user {UserId}", roleName, userId);
+                throw;
+            }
         }
 
 

@@ -1,4 +1,4 @@
-﻿using LibraryManagementSystem.Application.DTOs;
+﻿using LibraryManagementSystem.Application.DTOs.Auth;
 
 namespace LibraryManagementSystem.Application.Services
 {
@@ -10,5 +10,7 @@ namespace LibraryManagementSystem.Application.Services
         Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordRequest model);
         Task<AuthResponseDto> ChangePasswordAsync(string userId, ChangePasswordRequest model);
         Task<AuthResponseDto> AssignRoleAsync(string userId, string roleName);
+        Task<AuthResponseDto> UpdateRoleAsync(string userId, string oldRoleName, string newRoleName);
+        Task<AuthResponseDto> DeleteRoleFromUserAsync(string userId, string roleName);
     }
 }

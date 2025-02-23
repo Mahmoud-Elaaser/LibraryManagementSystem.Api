@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using LibraryManagementSystem.Application.DTOs;
+using LibraryManagementSystem.Application.DTOs.Auth;
 using LibraryManagementSystem.Domain.Entities;
 
 namespace LibraryManagementSystem.Application.Mappings

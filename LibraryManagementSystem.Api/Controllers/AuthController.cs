@@ -1,4 +1,4 @@
-﻿using LibraryManagementSystem.Application.DTOs;
+﻿using LibraryManagementSystem.Application.DTOs.Auth;
 using LibraryManagementSystem.Application.Services;
 using LibraryManagementSystem.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -74,7 +74,40 @@ namespace LibraryManagementSystem.Api.Controllers
             return Ok(result);
         }
 
-        //---------------------------------------------------------------------------------------
+        [HttpPost("roles/assign")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest model)
+        {
+            var result = await _authService.AssignRoleAsync(model.UserId, model.RoleName);
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpPut("roles/update")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleRequest model)
+        {
+            var result = await _authService.UpdateRoleAsync(model.UserId, model.OldRoleName, model.NewRoleName);
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+        [HttpDelete("roles/delete")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteRole([FromBody] DeleteRoleRequest model)
+        {
+            var result = await _authService.DeleteRoleFromUserAsync(model.UserId, model.RoleName);
+            if (!result.IsSuccess)
+                return BadRequest(result);
+
+            return Ok(result);
+        }
+
+
         /*
             This endpoint validates the token and marks your email as confirmed in the database  
             and If you don't have this endpoint, clicking the link in the email won't work
@@ -111,6 +144,8 @@ namespace LibraryManagementSystem.Api.Controllers
                 return _htmlResponseService.CreateHtmlResponse("An error occurred while confirming your email", false);
             }
         }
+
+
 
     }
 }
