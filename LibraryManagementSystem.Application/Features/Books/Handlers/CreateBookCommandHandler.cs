@@ -20,12 +20,15 @@ namespace LibraryManagementSystem.Application.Features.Books.Handlers
 
         public async Task<BookDto> Handle(CreateBookCommand request, CancellationToken cancellationToken)
         {
+
             var book = new Book
             {
                 Title = request.Title,
-                Author = request.Author,
+                GenreId = request.GenreId,
+                AuthorId = request.AuthorId,
                 ISBN = request.ISBN,
-                PublicationDate = request.PublicationDate
+                PublicationDate = request.PublicationDate,
+                IsAvailable = true
             };
 
             var createdBook = await _bookRepository.AddAsync(book);
@@ -35,7 +38,8 @@ namespace LibraryManagementSystem.Application.Features.Books.Handlers
             {
                 Id = createdBook.Id,
                 Title = createdBook.Title,
-                Author = createdBook.Author,
+                GenreId = request.GenreId,
+                AuthorId = createdBook.AuthorId,
                 ISBN = createdBook.ISBN,
                 PublicationDate = createdBook.PublicationDate
             };

@@ -35,9 +35,20 @@ namespace LibraryManagementSystem.Infrastructure.Context
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Title).IsRequired();
-                entity.Property(e => e.Author).IsRequired();
                 entity.Property(e => e.ISBN).IsRequired();
             });
+
+            // Book -> Author (Many-to-One)
+            modelBuilder.Entity<Book>()
+                .HasOne(b => b.Author)
+                .WithMany(a => a.Books)  // Ensure the Author class has a Books collection
+                .HasForeignKey(b => b.AuthorId);
+
+            // Book -> Genre (Many-to-One)
+            modelBuilder.Entity<Book>()
+                .HasOne(b => b.Genre)
+                .WithMany(g => g.Books)  // Ensure the Genre class has a Books collection
+                .HasForeignKey(b => b.GenreId);
         }
     }
 }

@@ -9,7 +9,7 @@ namespace LibraryManagementSystem.Infrastructure.Context
         {
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
 
-            string[] roles = { "Admin", "User", "Librarian" };
+            string[] roles = { "Admin", "User", "Librarian", "Author" };
 
             foreach (var role in roles)
             {

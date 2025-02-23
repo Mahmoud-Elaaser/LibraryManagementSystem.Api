@@ -10,6 +10,5 @@ namespace LibraryManagementSystem.Application.Services
         Task<AuthResponseDto> ResetPasswordAsync(ResetPasswordRequest model);
         Task<AuthResponseDto> ChangePasswordAsync(string userId, ChangePasswordRequest model);
         Task<AuthResponseDto> AssignRoleAsync(string userId, string roleName);
-        Task<AuthResponseDto> ConfirmEmailAsync(string token, string email);
     }
 }

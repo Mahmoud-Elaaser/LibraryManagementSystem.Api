@@ -4,6 +4,7 @@ using LibraryManagementSystem.Infrastructure;
 using LibraryManagementSystem.Infrastructure.Context;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 namespace LibraryManagementSystem.Api
 {
     public class Program
@@ -25,7 +26,8 @@ namespace LibraryManagementSystem.Api
 
             builder.Services.AddInfrastructureDependencies();
             builder.Services.AddApplicationDependencies();
-
+            builder.Services.AddApplicationServices();
+            builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();

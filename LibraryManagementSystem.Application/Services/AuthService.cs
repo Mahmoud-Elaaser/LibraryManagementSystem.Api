@@ -52,30 +52,27 @@ namespace LibraryManagementSystem.Application.Services
                 {
                     return new AuthResponseDto { IsSuccess = false, Message = "Email already exists" };
                 }
-
                 var user = _mapper.Map<User>(model);
-
                 user.UserName = model.Email;
                 user.IsActive = false;
                 user.MembershipDate = DateTime.UtcNow;
-
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (!result.Succeeded)
                 {
                     return new AuthResponseDto { IsSuccess = false, Message = result.Errors.First().Description };
                 }
-
                 await _userManager.AddToRoleAsync(user, "User");
-
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                var confirmationLink = $"{_configuration["AppUrl"]}/api/auth/confirm-email?token={WebUtility.UrlEncode(token)}&email={WebUtility.UrlEncode(user.Email)}";
+
+
+                var baseUrl = _configuration["AppUrl"]?.TrimEnd('/');
+                var confirmationLink = $"{baseUrl}/api/auth/confirm-email?token={WebUtility.UrlEncode(token)}&email={WebUtility.UrlEncode(user.Email)}";
 
                 await _emailService.SendEmailAsync(
                     user.Email,
                     "Confirm your email",
                     $"Please confirm your email by clicking this link: <a href='{confirmationLink}'>Confirm Email</a>"
                 );
-
                 return new AuthResponseDto { IsSuccess = true, Message = "Registration successful. Please check your email for confirmation." };
             }
             catch (Exception ex)
@@ -270,27 +267,6 @@ namespace LibraryManagementSystem.Application.Services
             return new Random().Next(100000, 999999).ToString();
         }
 
-        //---------------------------------------------------------------
-        public async Task<AuthResponseDto> ConfirmEmailAsync(string token, string email)
-        {
-            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
-            {
-                return new AuthResponseDto { IsSuccess = false, Message = "Invalid email confirmation request." };
-            }
 
-            var user = await _userManager.FindByEmailAsync(email);
-            if (user == null)
-            {
-                return new AuthResponseDto { IsSuccess = false, Message = "User not found." };
-            }
-
-            var result = await _userManager.ConfirmEmailAsync(user, token);
-            if (result.Succeeded)
-            {
-                return new AuthResponseDto { IsSuccess = true, Message = "Email confirmed successfully." };
-            }
-
-            return new AuthResponseDto { IsSuccess = false, Message = "Email confirmation failed." };
-        }
     }
 }

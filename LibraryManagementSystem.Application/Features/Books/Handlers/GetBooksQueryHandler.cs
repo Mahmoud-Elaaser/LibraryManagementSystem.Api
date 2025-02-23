@@ -30,7 +30,6 @@ namespace LibraryManagementSystem.Application.Features.Books.Handlers
                 var searchTerm = request.SearchTerm.ToLower();
                 query = query.Where(b =>
                     b.Title.ToLower().Contains(searchTerm) ||
-                    b.Author.ToLower().Contains(searchTerm) ||
                     b.ISBN.ToLower().Contains(searchTerm));
             }
 
@@ -63,7 +62,7 @@ namespace LibraryManagementSystem.Application.Features.Books.Handlers
             {
                 Id = b.Id,
                 Title = b.Title,
-                Author = b.Author,
+                AuthorId = b.AuthorId,
                 ISBN = b.ISBN,
                 PublicationDate = b.PublicationDate
             });

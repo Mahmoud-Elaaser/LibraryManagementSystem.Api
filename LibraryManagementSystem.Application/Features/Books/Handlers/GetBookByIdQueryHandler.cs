@@ -28,7 +28,7 @@ namespace LibraryManagementSystem.Application.Features.Books.Handlers
             {
                 Id = book.Id,
                 Title = book.Title,
-                Author = book.Author,
+                AuthorId = book.AuthorId,
                 ISBN = book.ISBN,
                 PublicationDate = book.PublicationDate
             };

@@ -1,6 +1,7 @@
 ﻿using LibraryManagementSystem.Application.DTOs;
 using LibraryManagementSystem.Domain.Entities;
 using LibraryManagementSystem.Infrastructure.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagementSystem.Api.Controllers
@@ -126,6 +127,7 @@ namespace LibraryManagementSystem.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Librarian")]
         public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto createUserDto)
         {
             try

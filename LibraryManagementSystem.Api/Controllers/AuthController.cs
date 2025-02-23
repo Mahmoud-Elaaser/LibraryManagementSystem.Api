@@ -1,6 +1,8 @@
 ﻿using LibraryManagementSystem.Application.DTOs;
 using LibraryManagementSystem.Application.Services;
+using LibraryManagementSystem.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -11,10 +13,13 @@ namespace LibraryManagementSystem.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-
-        public AuthController(IAuthService authService)
+        private readonly IHtmlResponseService _htmlResponseService;
+        private readonly UserManager<User> _userManager;
+        public AuthController(IAuthService authService, UserManager<User> userManager, IHtmlResponseService htmlResponseService)
         {
             _authService = authService;
+            _userManager = userManager;
+            _htmlResponseService = htmlResponseService;
         }
 
         [HttpPost("register")]
@@ -68,17 +73,43 @@ namespace LibraryManagementSystem.Api.Controllers
 
             return Ok(result);
         }
-        //---------------------------------------------------------------------------------------
-        [HttpGet("confirm-email")]
-        public async Task<IActionResult> ConfirmEmail(string token, string email)
-        {
-            var result = await _authService.ConfirmEmailAsync(token, email);
-            if (result.IsSuccess)
-            {
-                return Ok(result.Message);
-            }
 
-            return BadRequest(result.Message);
+        //---------------------------------------------------------------------------------------
+        /*
+            This endpoint validates the token and marks your email as confirmed in the database  
+            and If you don't have this endpoint, clicking the link in the email won't work
+        */
+        [HttpGet("confirm-email")]
+        public async Task<ContentResult> ConfirmEmail(string token, string email)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
+                {
+                    return _htmlResponseService.CreateHtmlResponse("Invalid email confirmation token", false);
+                }
+
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    return _htmlResponseService.CreateHtmlResponse("User not found", false);
+                }
+
+                var result = await _userManager.ConfirmEmailAsync(user, token);
+                if (result.Succeeded)
+                {
+                    user.IsActive = true;
+                    await _userManager.UpdateAsync(user);
+
+                    return _htmlResponseService.CreateHtmlResponse("Email confirmed successfully! You can now close this page and log in to your account.", true);
+                }
+
+                return _htmlResponseService.CreateHtmlResponse("Email confirmation failed", false);
+            }
+            catch (Exception ex)
+            {
+                return _htmlResponseService.CreateHtmlResponse("An error occurred while confirming your email", false);
+            }
         }
 
     }

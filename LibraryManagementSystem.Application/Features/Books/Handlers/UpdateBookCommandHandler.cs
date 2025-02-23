@@ -23,7 +23,7 @@ namespace LibraryManagementSystem.Application.Features.Books.Handlers
                 ?? throw new KeyNotFoundException($"Book with ID {request.Id} not found");
 
             book.Title = request.Title;
-            book.Author = request.Author;
+            book.AuthorId = request.AuthorId;
             book.ISBN = request.ISBN;
             book.PublicationDate = request.PublicationDate;
 
@@ -34,7 +34,7 @@ namespace LibraryManagementSystem.Application.Features.Books.Handlers
             {
                 Id = book.Id,
                 Title = book.Title,
-                Author = book.Author,
+                AuthorId = book.AuthorId,
                 ISBN = book.ISBN,
                 PublicationDate = book.PublicationDate
             };
