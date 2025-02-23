@@ -2,7 +2,6 @@
 using LibraryManagementSystem.Application.Features.Genres.Commands;
 using LibraryManagementSystem.Application.Features.Genres.Queries;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagementSystem.Api.Controllers
@@ -42,7 +41,7 @@ namespace LibraryManagementSystem.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Librarian,Author")]
+        //[Authorize(Roles = "Admin,Librarian,Author")]
         public async Task<ActionResult<GenreDto>> Create([FromBody] CreateGenreCommand command)
         {
             var genre = await _mediator.Send(command);
@@ -69,7 +68,7 @@ namespace LibraryManagementSystem.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,Librarian,Author")]
+        //[Authorize(Roles = "Admin,Librarian,Author")]
         public async Task<ActionResult> Delete(int id)
         {
             try

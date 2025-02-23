@@ -1,4 +1,5 @@
-﻿using LibraryManagementSystem.Application.DTOs;
+﻿using AutoMapper;
+using LibraryManagementSystem.Application.DTOs;
 using LibraryManagementSystem.Application.Features.Books.Commands;
 using LibraryManagementSystem.Infrastructure.Repositories.Interfaces;
 using MediatR;
@@ -9,11 +10,13 @@ namespace LibraryManagementSystem.Application.Features.Books.Handlers
     public class UpdateBookCommandHandler : IRequestHandler<UpdateBookCommand, BookDto>
     {
         private readonly IBookRepository _bookRepository;
+        private readonly IMapper _mapper;
         private readonly ILogger<UpdateBookCommandHandler> _logger;
 
-        public UpdateBookCommandHandler(IBookRepository bookRepository, ILogger<UpdateBookCommandHandler> logger)
+        public UpdateBookCommandHandler(IBookRepository bookRepository, IMapper mapper, ILogger<UpdateBookCommandHandler> logger)
         {
             _bookRepository = bookRepository;
+            _mapper = mapper;
             _logger = logger;
         }
 
@@ -22,22 +25,11 @@ namespace LibraryManagementSystem.Application.Features.Books.Handlers
             var book = await _bookRepository.GetByIdAsync(request.Id)
                 ?? throw new KeyNotFoundException($"Book with ID {request.Id} not found");
 
-            book.Title = request.Title;
-            book.AuthorId = request.AuthorId;
-            book.ISBN = request.ISBN;
-            book.PublicationDate = request.PublicationDate;
-
+            _mapper.Map(request, book);
             await _bookRepository.UpdateAsync(book);
             _logger.LogInformation("Updated book with ID {BookId}", book.Id);
 
-            return new BookDto
-            {
-                Id = book.Id,
-                Title = book.Title,
-                AuthorId = book.AuthorId,
-                ISBN = book.ISBN,
-                PublicationDate = book.PublicationDate
-            };
+            return _mapper.Map<BookDto>(book);
         }
     }
 }

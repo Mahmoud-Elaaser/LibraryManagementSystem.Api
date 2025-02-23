@@ -57,7 +57,7 @@ namespace LibraryManagementSystem.Application.Features.Books.Handlers
 
             _logger.LogInformation("Retrieved {Count} books", books.Count);
 
-            // Map to DTOs
+
             var bookDtos = books.Select(b => new BookDto
             {
                 Id = b.Id,

@@ -1,7 +1,6 @@
 ﻿using LibraryManagementSystem.Application.Features.Books.Commands;
 using LibraryManagementSystem.Application.Features.Books.Queries;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryManagementSystem.Api.Controllers
@@ -39,7 +38,7 @@ namespace LibraryManagementSystem.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Librarian,Author")]
+        //[Authorize(Roles = "Admin,Librarian,Author")]
         public async Task<IActionResult> Create(CreateBookCommand command)
         {
             var book = await _mediator.Send(command);
@@ -64,7 +63,7 @@ namespace LibraryManagementSystem.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,Librarian,Author")]
+        //[Authorize(Roles = "Admin,Librarian,Author")]
         public async Task<IActionResult> Delete(int id)
         {
             try

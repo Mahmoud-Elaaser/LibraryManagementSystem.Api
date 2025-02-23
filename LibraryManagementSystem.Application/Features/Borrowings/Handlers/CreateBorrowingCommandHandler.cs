@@ -1,4 +1,5 @@
-﻿using LibraryManagementSystem.Application.DTOs;
+﻿using AutoMapper;
+using LibraryManagementSystem.Application.DTOs;
 using LibraryManagementSystem.Application.Features.Borrowings.Commands;
 using LibraryManagementSystem.Domain.Entities;
 using LibraryManagementSystem.Infrastructure.Repositories.Interfaces;
@@ -12,17 +13,20 @@ namespace LibraryManagementSystem.Application.Features.Borrowings.Handlers
         private readonly IBorrowingRepository _borrowingRepository;
         private readonly IBookRepository _bookRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IMapper _mapper;
         private readonly ILogger<CreateBorrowingCommandHandler> _logger;
 
         public CreateBorrowingCommandHandler(
             IBorrowingRepository borrowingRepository,
             IBookRepository bookRepository,
             IUserRepository userRepository,
+            IMapper mapper,
             ILogger<CreateBorrowingCommandHandler> logger)
         {
             _borrowingRepository = borrowingRepository;
             _bookRepository = bookRepository;
             _userRepository = userRepository;
+            _mapper = mapper;
             _logger = logger;
         }
 
@@ -46,7 +50,7 @@ namespace LibraryManagementSystem.Application.Features.Borrowings.Handlers
                 IsReturned = false
             };
 
-            book.IsAvailable = false;
+            book.IsAvailable = true;
             await _bookRepository.UpdateAsync(book);
 
             var createdBorrowing = await _borrowingRepository.AddAsync(borrowing);

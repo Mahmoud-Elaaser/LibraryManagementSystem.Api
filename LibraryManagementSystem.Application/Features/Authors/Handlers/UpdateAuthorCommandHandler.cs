@@ -1,4 +1,5 @@
-﻿using LibraryManagementSystem.Application.DTOs;
+﻿using AutoMapper;
+using LibraryManagementSystem.Application.DTOs;
 using LibraryManagementSystem.Application.Features.Authors.Commands;
 using LibraryManagementSystem.Infrastructure.Repositories.Interfaces;
 using MediatR;
@@ -9,11 +10,13 @@ namespace LibraryManagementSystem.Application.Features.Authors.Handlers
     public class UpdateAuthorCommandHandler : IRequestHandler<UpdateAuthorCommand, AuthorDto>
     {
         private readonly IAuthorRepository _authorRepository;
+        private readonly IMapper _mapper;
         private readonly ILogger<UpdateAuthorCommandHandler> _logger;
 
-        public UpdateAuthorCommandHandler(IAuthorRepository authorRepository, ILogger<UpdateAuthorCommandHandler> logger)
+        public UpdateAuthorCommandHandler(IAuthorRepository authorRepository, IMapper mapper, ILogger<UpdateAuthorCommandHandler> logger)
         {
             _authorRepository = authorRepository;
+            _mapper = mapper;
             _logger = logger;
         }
 
@@ -22,23 +25,11 @@ namespace LibraryManagementSystem.Application.Features.Authors.Handlers
             var author = await _authorRepository.GetByIdAsync(request.Id)
                 ?? throw new KeyNotFoundException($"Author with ID {request.Id} not found");
 
-            author.Name = request.Name;
-            author.Biography = request.Biography;
-            author.DateOfBirth = request.DateOfBirth;
-            author.Nationality = request.Nationality;
-
+            _mapper.Map(request, author);
             await _authorRepository.UpdateAsync(author);
             _logger.LogInformation("Updated author with ID {AuthorId}", author.Id);
 
-            return new AuthorDto
-            {
-                Id = author.Id,
-                Name = author.Name,
-                Biography = author.Biography,
-                DateOfBirth = author.DateOfBirth,
-                Nationality = author.Nationality,
-                BookCount = author.Books.Count
-            };
+            return _mapper.Map<AuthorDto>(author);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using LibraryManagementSystem.Application.DTOs;
+﻿using AutoMapper;
+using LibraryManagementSystem.Application.DTOs;
 using LibraryManagementSystem.Application.Features.Authors.Commands;
 using LibraryManagementSystem.Domain.Entities;
 using LibraryManagementSystem.Infrastructure.Repositories.Interfaces;
@@ -10,36 +11,23 @@ namespace LibraryManagementSystem.Application.Features.Authors.Handlers
     public class CreateAuthorCommandHandler : IRequestHandler<CreateAuthorCommand, AuthorDto>
     {
         private readonly IAuthorRepository _authorRepository;
+        private readonly IMapper _mapper;
         private readonly ILogger<CreateAuthorCommandHandler> _logger;
 
-        public CreateAuthorCommandHandler(IAuthorRepository authorRepository, ILogger<CreateAuthorCommandHandler> logger)
+        public CreateAuthorCommandHandler(IAuthorRepository authorRepository, IMapper mapper, ILogger<CreateAuthorCommandHandler> logger)
         {
             _authorRepository = authorRepository;
+            _mapper = mapper;
             _logger = logger;
         }
 
         public async Task<AuthorDto> Handle(CreateAuthorCommand request, CancellationToken cancellationToken)
         {
-            var author = new Author
-            {
-                Name = request.Name,
-                Biography = request.Biography,
-                DateOfBirth = request.DateOfBirth,
-                Nationality = request.Nationality
-            };
-
+            var author = _mapper.Map<Author>(request);
             var createdAuthor = await _authorRepository.AddAsync(author);
             _logger.LogInformation("Created new author with ID {AuthorId}", createdAuthor.Id);
 
-            return new AuthorDto
-            {
-                Id = createdAuthor.Id,
-                Name = createdAuthor.Name,
-                Biography = createdAuthor.Biography,
-                DateOfBirth = createdAuthor.DateOfBirth,
-                Nationality = createdAuthor.Nationality,
-                BookCount = 0
-            };
+            return _mapper.Map<AuthorDto>(createdAuthor);
         }
     }
 }
