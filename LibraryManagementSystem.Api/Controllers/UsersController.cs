@@ -20,6 +20,7 @@ namespace LibraryManagementSystem.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Librarian")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAll([FromQuery] bool? activeOnly)
         {
             try
@@ -214,6 +215,7 @@ namespace LibraryManagementSystem.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Librarian")]
         public async Task<ActionResult> Delete(int id)
         {
             try

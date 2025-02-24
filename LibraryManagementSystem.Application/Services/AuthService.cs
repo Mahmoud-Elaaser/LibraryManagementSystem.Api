@@ -128,15 +128,14 @@ namespace LibraryManagementSystem.Application.Services
                 if (user == null)
                     return new AuthResponseDto { IsSuccess = false, Message = "User not found" };
 
-                /// Generate password reset token and OTP
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
                 var otp = GenerateOTP();
 
-                /// Store OTP in user's security stamp
+                // Store OTP in security stamp
                 user.SecurityStamp = otp;
                 await _userManager.UpdateAsync(user);
 
-
+                // Send OTP via email
                 var emailBody = $"Your OTP for password reset is: {otp}";
                 await _emailService.SendEmailAsync(user.Email, "Password Reset OTP", emailBody);
 
@@ -157,15 +156,18 @@ namespace LibraryManagementSystem.Application.Services
                 if (user == null)
                     return new AuthResponseDto { IsSuccess = false, Message = "User not found" };
 
-                /// Verify OTP
-                if (user.SecurityStamp != model.Token)
+                // Verify OTP
+                if (user.SecurityStamp != model.OTP)
                     return new AuthResponseDto { IsSuccess = false, Message = "Invalid OTP" };
 
-                var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
+                // Set the new password
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, token, model.Password);
+
                 if (!result.Succeeded)
                     return new AuthResponseDto { IsSuccess = false, Message = result.Errors.First().Description };
 
-                /// Clear the security stamp
+                // Clear the security stamp after successful reset
                 user.SecurityStamp = Guid.NewGuid().ToString();
                 await _userManager.UpdateAsync(user);
 
